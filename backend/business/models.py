@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 class Customer(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     gender = models.CharField(max_length=20, null=True)
-    status = models.CharField(max_length=20, null=True, choices=(('confirmed', 'confirmed'), ('paid', 'paid'), ('canceled', 'canceled')))
+    status = models.CharField(max_length=20, null=True, choices=(('Pending', 'Pending'), ('Accept', 'Accept'), ('Canceled', 'Canceled')))
 
     def __str__(self):
         return self.user.username
