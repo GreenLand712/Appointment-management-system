@@ -1,3 +1,4 @@
+from urllib import response
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework import generics
@@ -36,12 +37,13 @@ class Signup(APIView):
 class Login(APIView):
 
     def post(self, request):
-        uname = request.data.get('uname')
+        # uname = request.data.get('uname')
+        email = request.data.get('email')
         pwd = request.data.get('pwd')
-        user = authenticate(username=uname, password=pwd)
+        user = authenticate(email=email, password=pwd)
         # cust = Customer.objects.get(user=user)
 
-        if uname is None or pwd is None:
+        if email is None or pwd is None:
             return Response({'error': 'Please provide both username and password'}, status=HTTP_400_BAD_REQUEST)
 
         if user:
@@ -94,24 +96,27 @@ class CustomerView(APIView):
         serializer = self.serializer_class(pro, many = True).data
         return Response(serializer, HTTP_200_OK)
 
-class AppointmentView(APIView):
+class AppointmentClientView(APIView):
     serializer_class = AppointmentSerializer
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = User.objects.get(username=request.user)
         customer = Customer.objects.get(user=user)
-        pro = Appointment.objects.filter(customer = customer.user.username)
+        date = request.data.get('date')
+        pro = Appointment.objects.filter(customer = customer.user.username, date = date, status='confirmed')
         serializer = self.serializer_class(pro, many = True).data
         return Response(serializer, HTTP_200_OK)
 
-class AppointmentDateView(APIView):
+class AppointmentBusinessView(APIView):
     serializer_class = AppointmentSerializer
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        user = User.objects.get(username=request.user)
+        business = Business.objects.get(user=user)
         date = request.data.get('date')
-        pro = Appointment.objects.filter(date = date)
+        pro = Appointment.objects.filter(business = business.name, date = date)
         serializer = self.serializer_class(pro, many=True).data
         return Response(serializer, HTTP_200_OK)
 
@@ -135,8 +140,11 @@ class AddAppointment(APIView):
                 return Response({'message': 'That time slot is already appointed'}, status=HTTP_400_BAD_REQUEST)
                 break
         Appointment.objects.create(service=service, customer=customer, business=business, status=status, date=date, start_time=start_time, end_time=end_time)
-        return Response({"message": "Appointment create successfully"}, status=HTTP_201_CREATED)
+        return Response({"message": "Appointment create successfully. Please wait until business accept it."}, status=HTTP_201_CREATED)
 
+def deleteAppointment(request, id):
+    Appointment.objects.filter(id=id).delete()
+    return Response({'message': "Your appointment is canceled"}, status=HTTP_200_OK)    
 
 class RUDAppointment(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'id'
@@ -145,3 +153,14 @@ class RUDAppointment(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return Appointment.objects.all()
+
+class ConfirmedAppointment(APIView):
+    serializer_class = AppointmentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = User.objects.get(username=request.user)
+        customer = Customer.objects.get(user=user)
+        pro = Appointment.objects.filter(customer=customer.user.username, status = 'confirmed')
+        serializer = self.serializer_class(pro, many=True).data
+        return Response(serializer, HTTP_200_OK)
