@@ -1,1 +1,60 @@
-eEffect instead.');\n    } finally {\n      if (previousFiber) {\n        setCurrentFiber(fiber);\n      } else {\n        resetCurrentFiber();\n      }\n    }\n  }\n}\n\nvar didWarnStateUpdateForUnmountedComponent = null;\n\nfunction warnAboutUpdateOnUnmountedFiberInDEV(fiber) {\n  {\n    var tag = fiber.tag;\n\n    if (tag !== HostRoot && tag !== ClassComponent && tag !== FunctionComponent && tag !== ForwardRef && tag !== MemoComponent && tag !== SimpleMemoComponent && tag !== Block) {\n      // Only warn for user-defined components, not internal ones like Suspense.\n      return;\n    } // If there are pending passive effects unmounts for this Fiber,\n    // we can assume that they would have prevented this update.\n\n\n    if ((fiber.flags & PassiveUnmountPendingDev) !== NoFlags) {\n      return;\n    } // We show the whole stack but dedupe on the top component's name because\n    // the problematic code almost always lies inside that component.\n\n\n    var componentName = getComponentName(fiber.type) || 'ReactComponent';\n\n    if (didWarnStateUpdateForUnmountedComponent !== null) {\n      if (didWarnStateUpdateForUnmountedComponent.has(componentName)) {\n        return;\n      }\n\n      didWarnStateUpdateForUnmountedComponent.add(componentName);\n    } else {\n      didWarnStateUpdateForUnmountedComponent = new Set([componentName]);\n    }\n\n    if (isFlushingPassiveEffects) ; else {\n      var previousFiber = current;\n\n      try {\n        setCurrentFiber(fiber);\n\n        error(\"Can't perform a React state update on an unmounted component. This \" + 'is a no-op, but it indicates a memory leak in your application. To ' + 'fix, ca
+import React, { useState } from "react";
+import {Form} from 'react-bootstrap'
+import { Button } from "react-bootstrap";
+import "./Login.css";
+import { Navigate } from 'react-router';
+import axios from 'axios'
+
+function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [token, setToken] = useState('');
+  function validateForm() {
+    return email.length > 0 && password.length > 8;
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    axios.post('http://127.0.0.1:8000/appointment/login/', {
+      email: e.target.elements.email.value,
+      pwd: e.target.elements.password.value,
+    })
+      .then(res => {
+        setToken(res.data.key);
+        localStorage.setItem('token',res.data.key)
+        })
+      .catch(error => alert('Please try again.'))
+  }
+  if (token) {
+    return <Navigate to="/" />;
+  }
+  return (
+    <div className="Login">
+      <Form onSubmit={handleSubmit}>
+        <Form.Group size="lg" controlId="email">
+          <Form.Label>Email</Form.Label>
+          <Form.Control
+            autoFocus
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </Form.Group><br />
+        <Form.Group size="lg" controlId="password">
+          <Form.Label>Password</Form.Label>
+          <Form.Control
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </Form.Group>
+        <br /><br />
+        <Button size="lg" type="submit" disabled={!validateForm()}>
+          Log In
+        </Button>
+      </Form><br />
+      <p style={{textAlign:'center'}}>New us? Please <a href="/signup">Sign up</a></p>
+    </div>
+  );
+}
+export default Login

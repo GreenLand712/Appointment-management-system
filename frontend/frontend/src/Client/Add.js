@@ -14,12 +14,16 @@ const handlesubmit = (e) => {
 
 function Add() {
   return (
-    <form>
-        <strong>Business:</strong><input type='text' name='business' />
-        <strong>Date:</strong><input type='date' name='date' />
-        <strong>Start-time:</strong><input type='time' name='start_time' />
-        <strong>End-time:</strong><input type='time' name='end_time' />
-        <input type='submit' value='Send Appointment' onSubmit={handlesubmit} />
+    <form style={{margin:'50px'}}>
+        <label for="business" className="form-label" >Business:</label>
+        <input type='text' className="form-control" name='business' id='business' />
+        <label for="date" className="form-label">Date:</label>
+        <input type='date' className="form-control" name='date' id='date' />
+        <label for="start_time" className="form-label">Start-time:</label>
+        <input type='time' className="form-control" name='start_time' id='start_time' />
+        <label for="end_time" className="form-label">End-time:</label>
+        <input type='time' name='end_time' className="form-control" id="end_time" />
+        <input type='submit' value='Send Appointment' onSubmit={handlesubmit} className="btn btn-primary" />
     </form>
   )
 }

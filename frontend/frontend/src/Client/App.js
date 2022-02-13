@@ -11,15 +11,13 @@ export class App extends Component {
     return (
       <div>
         <Routes>
-            <Route exact path='/' element={<Login />} />
-            <Route path='/client' element={<Client />} />
+            <Route exact path='/' element={<Client />} />
+            <Route path='/login' element={<Login />} />
             <Route path='/add' element={<Add />} />
             {/* <Route path='/{id}'>
                 <Edit />
-            </Route>
-            <Route path='/signup'>
-                <Signup />
             </Route> */}
+            <Route path='/signup' element={<Signup />} />
         </Routes>
       </div>
     )

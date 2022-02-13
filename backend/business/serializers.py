@@ -8,7 +8,7 @@ class CustomerSerializer(serializers.ModelSerializer):
     # status = serializers.SerializerMethodField()
     class Meta:
         model = Customer
-        fields = ('id', 'user', 'first_name', 'last_name', 'gender', 'email')
+        fields = ('id', 'user', 'first_name', 'last_name', 'email')
 
     def get_user(self, obj):
         return obj.user.username
@@ -30,7 +30,7 @@ class ServiceSerializer(serializers.ModelSerializer):
 class AppointmentSerializer(serializers.ModelSerializer):
     business = serializers.SerializerMethodField()
     customer = serializers.SerializerMethodField()
-    service = serializers.SerializerMethodField()
+    # service = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
 
     class Meta:
@@ -43,8 +43,8 @@ class AppointmentSerializer(serializers.ModelSerializer):
     def get_business(self, obj):
         return obj.business.name
 
-    def get_service(self, obj):
-        return obj.service.name
+    # def get_service(self, obj):
+    #     return obj.service.name
 
     def get_status(self, obj):
         return obj.get_status_display()

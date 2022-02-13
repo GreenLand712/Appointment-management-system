@@ -4,7 +4,6 @@ from django.contrib.auth.models import User
 # Create your models here.
 class Customer(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-    gender = models.CharField(max_length=20, null=True)
     email = models.EmailField(max_length=20, null=True)
     # status = models.CharField(max_length=20, null=True, choices=(('Pending', 'Pending'), ('Accept', 'Accept'), ('Canceled', 'Canceled')))
 

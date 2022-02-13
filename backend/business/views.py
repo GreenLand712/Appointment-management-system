@@ -3,16 +3,17 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework import generics
 from .serializers import *
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND, HTTP_201_CREATED
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
+from rest_framework.authentication import TokenAuthentication
 
 # Create your views here.
 class Signup(APIView):
-
+    # permission_classes = (IsAdminUser,)
     def post(self, request):
         fname = request.data.get('fname')
         lname = request.data.get('lname')
@@ -24,11 +25,10 @@ class Signup(APIView):
         except:
             pass
         pwd = request.data.get('pwd')
-        gen = request.data.get('gender')
-        user = User.objects.create(username=uname, first_name=fname, last_name=lname)
+        user = User.objects.create(username=uname, first_name=fname, last_name=lname, email=email)
         user.set_password(pwd)
         user.save()
-        Customer.objects.create(user=user,gender=gen, email=email)
+        Customer.objects.create(user=user, email=email)
         token, _ = Token.objects.get_or_create(user=user)
         return Response({'key': token.key},
                         status=HTTP_200_OK)
@@ -40,7 +40,8 @@ class Login(APIView):
         # uname = request.data.get('uname')
         email = request.data.get('email')
         pwd = request.data.get('pwd')
-        user = authenticate(email=email, password=pwd)
+        username = User.objects.get(email=email.lower()).username
+        user = authenticate(username=username, password=pwd)
         # cust = Customer.objects.get(user=user)
 
         if email is None or pwd is None:
@@ -70,7 +71,8 @@ class Admin_login(APIView):
 
 class BusinessView(APIView):
     serializer_class = BusinessSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
+    authentication_classes = (TokenAuthentication,)
 
     def get(self, request):
         pro = Business.objects.all()
@@ -80,7 +82,8 @@ class BusinessView(APIView):
 
 class ServiceView(APIView):
     serializer_class = ServiceSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
 
     def get(self, request):
         pro = Service.objects.all()
@@ -89,7 +92,8 @@ class ServiceView(APIView):
 
 class CustomerView(APIView):
     serializer_class = CustomerSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
+    authentication_classes = (TokenAuthentication,)
 
     def get(self,request):
         pro = Customer.objects.all()
@@ -98,19 +102,21 @@ class CustomerView(APIView):
 
 class AppointmentClientView(APIView):
     serializer_class = AppointmentSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
 
     def get(self, request):
         user = User.objects.get(username=request.user)
         customer = Customer.objects.get(user=user)
         date = request.data.get('date')
-        pro = Appointment.objects.filter(customer = customer.user.username, date = date, status='confirmed')
+        pro = Appointment.objects.filter(customer = customer.id, status='confirmed', date=date)
         serializer = self.serializer_class(pro, many = True).data
         return Response(serializer, HTTP_200_OK)
 
 class AppointmentBusinessView(APIView):
     serializer_class = AppointmentSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
 
     def get(self, request):
         user = User.objects.get(username=request.user)
@@ -121,7 +127,8 @@ class AppointmentBusinessView(APIView):
         return Response(serializer, HTTP_200_OK)
 
 class AddAppointment(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
 
     def post(self, request):
         user = User.objects.get(username=request.user)
@@ -149,14 +156,15 @@ def deleteAppointment(request, id):
 class RUDAppointment(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'id'
     serializer_class = AppointmentSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
         return Appointment.objects.all()
 
 class ConfirmedAppointment(APIView):
     serializer_class = AppointmentSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
 
     def get(self, request):
         user = User.objects.get(username=request.user)
