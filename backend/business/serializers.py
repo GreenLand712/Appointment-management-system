@@ -5,10 +5,10 @@ class CustomerSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
     first_name = serializers.SerializerMethodField()
     last_name = serializers.SerializerMethodField()
-    status = serializers.SerializerMethodField()
+    # status = serializers.SerializerMethodField()
     class Meta:
         model = Customer
-        fields = ('pk', 'user', 'first_name', 'last_name', 'gender', 'status')
+        fields = ('id', 'user', 'first_name', 'last_name', 'email')
 
     def get_user(self, obj):
         return obj.user.username
@@ -16,25 +16,35 @@ class CustomerSerializer(serializers.ModelSerializer):
         return obj.user.first_name
     def get_last_name(self, obj):
         return obj.user.last_name
-    def get_status(self, obj):
-        return obj.get_status_display()
+
+class BusinessSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Business
+        fields = ('id', 'name', 'service')
 
 class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
-        fields = ('pk', 'name', 'cost')
+        fields = ('id', 'name')
 
 class AppointmentSerializer(serializers.ModelSerializer):
-    service = serializers.SerializerMethodField()
+    business = serializers.SerializerMethodField()
     customer = serializers.SerializerMethodField()
+    # service = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
 
     class Meta:
         model = Appointment
-        fields = ('pk', 'customer', 'service', 'status', 'date', 'time')
+        fields = ('id', 'customer', 'business', 'service','status', 'date', 'start_time', 'end_time')
 
     def get_customer(self, obj):
         return obj.customer.user.username
 
-    def get_service(self, obj):
-        return obj.service.name
+    def get_business(self, obj):
+        return obj.business.name
+
+    # def get_service(self, obj):
+    #     return obj.service.name
+
+    def get_status(self, obj):
+        return obj.get_status_display()
